@@ -3,13 +3,13 @@
 import * as z from "zod";
 import bcrypt from "bcryptjs";
 
-import { update } from "@/auth";
+import { unstable_update } from "@/auth";
 import { db } from "@/lib/db";
 import { SettingsSchema } from "@/schemas";
-import { getUserByEmail, getUserById } from "@/data/user";
+import { getUserByPhoneNumber, getUserById } from "@/data/user";
 import { currentUser } from "@/lib/auth";
 import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "@/lib/mail";
+import { sendVerificationSms } from "@/lib/sms";
 
 export const settings = async (
   values: z.infer<typeof SettingsSchema>
@@ -26,29 +26,25 @@ export const settings = async (
     return { error: "Unauthorized" }
   }
 
-  if (user.isOAuth) {
-    values.email = undefined;
-    values.password = undefined;
-    values.newPassword = undefined;
-    values.isTwoFactorEnabled = undefined;
-  }
+  // if (user.isOAuth) {
+  //   values.email = undefined;
+  //   values.password = undefined;
+  //   values.newPassword = undefined;
+  //   values.isTwoFactorEnabled = undefined;
+  // }
 
-  if (values.email && values.email !== user.email) {
-    const existingUser = await getUserByEmail(values.email);
+  if (values.phoneNumber && values.phoneNumber !== user.phoneNumber) {
+    const existingUser = await getUserByPhoneNumber(values.phoneNumber);
 
     if (existingUser && existingUser.id !== user.id) {
       return { error: "Email already in use!" }
     }
-
-    const verificationToken = await generateVerificationToken(
-      values.email
-    );
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token,
+    //don't forget await 
+    sendVerificationSms(
+      existingUser.phoneNumber,
     );
 
-    return { success: "Verification email sent!" };
+    return { success: "Verification message sent!" };
   }
 
   if (values.password && values.newPassword && dbUser.password) {
@@ -76,10 +72,10 @@ export const settings = async (
     }
   });
 
-  update({
+  unstable_update({
     user: {
       name: updatedUser.name,
-      email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
       isTwoFactorEnabled: updatedUser.isTwoFactorEnabled,
       role: updatedUser.role,
     }

@@ -12,7 +12,7 @@ Key Features:
 - 🔑 Credentials Provider
 - 🌐 OAuth Provider (Social login with Google & GitHub)
 - 🔒 Forgot password functionality
-- ✉️ Email verification
+- 📞 Phone number verification
 - 📱 Two factor verification
 - 👥 User roles (Admin & User)
 - 🔓 Login component (Opens in redirect or modal)

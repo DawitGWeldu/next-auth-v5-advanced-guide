@@ -14,12 +14,12 @@ export const getVerificationTokenByToken = async (
   }
 }
 
-export const getVerificationTokenByEmail = async (
-  email: string
+export const getVerificationTokenByPhoneNumber = async (
+  phoneNumber: string
 ) => {
   try {
     const verificationToken = await db.verificationToken.findFirst({
-      where: { email }
+      where: { phoneNumber }
     });
 
     return verificationToken;

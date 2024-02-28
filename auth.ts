@@ -1,5 +1,6 @@
+
 import NextAuth from "next-auth"
-import { UserRole } from "@prisma/client";
+import { UserRole, User } from "@prisma/client";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import { db } from "@/lib/db";
@@ -13,7 +14,7 @@ export const {
   auth,
   signIn,
   signOut,
-  update,
+  // unstable_update
 } = NextAuth({
   pages: {
     signIn: "/auth/login",
@@ -23,19 +24,21 @@ export const {
     async linkAccount({ user }) {
       await db.user.update({
         where: { id: user.id },
-        data: { emailVerified: new Date() }
+        data: { phoneNumberVerified: new Date() }
       })
     }
   },
   callbacks: {
     async signIn({ user, account }) {
       // Allow OAuth without email verification
+      const id = user.id as User["id"];
+  
+
       if (account?.provider !== "credentials") return true;
+      const existingUser = await getUserById(id);
 
-      const existingUser = await getUserById(user.id);
-
-      // Prevent sign in without email verification
-      if (!existingUser?.emailVerified) return false;
+      // Prevent sign in without phone number verification
+      if (!existingUser?.phoneNumberVerified) return false;
 
       if (existingUser.isTwoFactorEnabled) {
         const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
@@ -51,6 +54,7 @@ export const {
       return true;
     },
     async session({ token, session }) {
+
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
@@ -65,10 +69,10 @@ export const {
 
       if (session.user) {
         session.user.name = token.name;
-        session.user.email = token.email;
+        session.user.phoneNumber = token.phoneNumber as User["phoneNumber"]
         session.user.isOAuth = token.isOAuth as boolean;
       }
-
+      
       return session;
     },
     async jwt({ token }) {
@@ -84,7 +88,7 @@ export const {
 
       token.isOAuth = !!existingAccount;
       token.name = existingUser.name;
-      token.email = existingUser.email;
+      token.phoneNumber = existingUser.phoneNumber;
       token.role = existingUser.role;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
 

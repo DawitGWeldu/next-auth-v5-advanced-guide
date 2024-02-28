@@ -1,11 +1,14 @@
 import * as z from "zod";
 import { UserRole } from "@prisma/client";
 
+const phoneRegex = new RegExp(
+  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
+  );
 export const SettingsSchema = z.object({
   name: z.optional(z.string()),
   isTwoFactorEnabled: z.optional(z.boolean()),
   role: z.enum([UserRole.ADMIN, UserRole.USER]),
-  email: z.optional(z.string().email()),
+  phoneNumber: z.string().min(10, {message: "Invalid phone number"}),
   password: z.optional(z.string().min(6)),
   newPassword: z.optional(z.string().min(6)),
 })
@@ -37,15 +40,16 @@ export const NewPasswordSchema = z.object({
 });
 
 export const ResetSchema = z.object({
-  email: z.string().email({
-    message: "Email is required",
-  }),
+  phoneNumber: z.string().min(10, {message: "Invalid phone number"}),
+
+});
+
+export const otpSchema = z.object({
+  otp: z.string().min(6, {message: "OTP has to be 6 numbers"}),
 });
 
 export const LoginSchema = z.object({
-  email: z.string().email({
-    message: "Email is required",
-  }),
+  phoneNumber: z.string(),
   password: z.string().min(1, {
     message: "Password is required",
   }),
@@ -53,9 +57,7 @@ export const LoginSchema = z.object({
 });
 
 export const RegisterSchema = z.object({
-  email: z.string().email({
-    message: "Email is required",
-  }),
+  phoneNumber: z.string().min(10, {message: "Invalid phone number"}),
   password: z.string().min(6, {
     message: "Minimum 6 characters required",
   }),

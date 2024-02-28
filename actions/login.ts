@@ -6,12 +6,12 @@ import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { LoginSchema } from "@/schemas";
-import { getUserByEmail } from "@/data/user";
-import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
+import { getUserByPhoneNumber } from "@/data/user";
+import { getTwoFactorTokenByPhoneNumber } from "@/data/two-factor-token";
 import { 
-  sendVerificationEmail,
-  sendTwoFactorTokenEmail,
-} from "@/lib/mail";
+  sendVerificationSms,
+  sendTwoFactorTokenSms,
+} from "@/lib/sms";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { 
   generateVerificationToken,
@@ -20,6 +20,9 @@ import {
 import { 
   getTwoFactorConfirmationByUserId
 } from "@/data/two-factor-confirmation";
+import parsePhoneNumber from "libphonenumber-js";
+import { debug } from "console";
+
 
 export const login = async (
   values: z.infer<typeof LoginSchema>,
@@ -31,31 +34,29 @@ export const login = async (
     return { error: "Invalid fields!" };
   }
 
-  const { email, password, code } = validatedFields.data;
+  const { phoneNumber, password, code } = validatedFields.data;
+  const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
+  const num = parsedPhoneNumber!.nationalNumber;
+  const existingUser = await getUserByPhoneNumber(num);
 
-  const existingUser = await getUserByEmail(email);
-
-  if (!existingUser || !existingUser.email || !existingUser.password) {
-    return { error: "Email does not exist!" }
+  if (!existingUser || !existingUser.phoneNumber ) {
+    return { error: "Phone number does not exist!" }
   }
 
-  if (!existingUser.emailVerified) {
-    const verificationToken = await generateVerificationToken(
-      existingUser.email,
+  if (!existingUser.phoneNumberVerified) {
+    
+
+    sendVerificationSms(
+       existingUser.phoneNumber,
     );
 
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token,
-    );
-
-    return { success: "Confirmation email sent!" };
+    return { success: "Confirmation message sent!" };
   }
 
-  if (existingUser.isTwoFactorEnabled && existingUser.email) {
+  if (existingUser.isTwoFactorEnabled && existingUser.phoneNumber) {
     if (code) {
-      const twoFactorToken = await getTwoFactorTokenByEmail(
-        existingUser.email
+      const twoFactorToken = await getTwoFactorTokenByPhoneNumber(
+        existingUser.phoneNumber
       );
 
       if (!twoFactorToken) {
@@ -92,10 +93,8 @@ export const login = async (
         }
       });
     } else {
-      const twoFactorToken = await generateTwoFactorToken(existingUser.email)
-      await sendTwoFactorTokenEmail(
-        twoFactorToken.email,
-        twoFactorToken.token,
+      await sendTwoFactorTokenSms(
+        existingUser.phoneNumber,
       );
 
       return { twoFactor: true };
@@ -104,9 +103,9 @@ export const login = async (
 
   try {
     await signIn("credentials", {
-      email,
+      phoneNumber: num,
       password,
-      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+      redirectTo: DEFAULT_LOGIN_REDIRECT,
     })
   } catch (error) {
     if (error instanceof AuthError) {

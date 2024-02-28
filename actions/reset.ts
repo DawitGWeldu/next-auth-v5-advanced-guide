@@ -3,30 +3,28 @@
 import * as z from "zod";
 
 import { ResetSchema } from "@/schemas";
-import { getUserByEmail } from "@/data/user";
-import { sendPasswordResetEmail } from "@/lib/mail";
+import { getUserByPhoneNumber } from "@/data/user";
+import { sendPasswordResetSms } from "@/lib/sms";
 import { generatePasswordResetToken } from "@/lib/tokens";
 
 export const reset = async (values: z.infer<typeof ResetSchema>) => {
   const validatedFields = ResetSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: "Invalid emaiL!" };
+    return { error: "Invalid phone number!" };
   }
 
-  const { email } = validatedFields.data;
+  const { phoneNumber } = validatedFields.data;
 
-  const existingUser = await getUserByEmail(email);
+  const existingUser = await getUserByPhoneNumber(phoneNumber);
 
   if (!existingUser) {
-    return { error: "Email not found!" };
+    return { error: "Phone number not found!" };
   }
 
-  const passwordResetToken = await generatePasswordResetToken(email);
-  await sendPasswordResetEmail(
-    passwordResetToken.email,
-    passwordResetToken.token,
+  await sendPasswordResetSms(
+    phoneNumber
   );
 
-  return { success: "Reset email sent!" };
+  return { success: "Reset message sent!" };
 }

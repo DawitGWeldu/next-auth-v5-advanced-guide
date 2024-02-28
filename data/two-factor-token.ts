@@ -12,10 +12,10 @@ export const getTwoFactorTokenByToken = async (token: string) => {
   }
 };
 
-export const getTwoFactorTokenByEmail = async (email: string) => {
+export const getTwoFactorTokenByPhoneNumber = async (phoneNumber: string) => {
   try {
     const twoFactorToken = await db.twoFactorToken.findFirst({
-      where: { email }
+      where: { phoneNumber }
     });
 
     return twoFactorToken;

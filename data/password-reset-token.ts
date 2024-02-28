@@ -12,10 +12,10 @@ export const getPasswordResetTokenByToken = async (token: string) => {
   }
 };
 
-export const getPasswordResetTokenByEmail = async (email: string) => {
+export const getPasswordResetTokenByPhoneNumber = async (phoneNumber: string) => {
   try {
     const passwordResetToken = await db.passwordResetToken.findFirst({
-      where: { email }
+      where: { phoneNumber }
     });
 
     return passwordResetToken;

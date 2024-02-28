@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 import { NewPasswordSchema } from "@/schemas";
 import { getPasswordResetTokenByToken } from "@/data/password-reset-token";
-import { getUserByEmail } from "@/data/user";
+import { getUserByPhoneNumber } from "@/data/user";
 import { db } from "@/lib/db";
 
 export const newPassword = async (
@@ -36,10 +36,10 @@ export const newPassword = async (
     return { error: "Token has expired!" };
   }
 
-  const existingUser = await getUserByEmail(existingToken.email);
+  const existingUser = await getUserByPhoneNumber(existingToken.phoneNumber);
 
   if (!existingUser) {
-    return { error: "Email does not exist!" }
+    return { error: "Phone number does not exist!" }
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);

@@ -2,15 +2,15 @@ import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 
 import { db } from "@/lib/db";
-import { getVerificationTokenByEmail } from "@/data/verificiation-token";
-import { getPasswordResetTokenByEmail } from "@/data/password-reset-token";
-import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
+import { getVerificationTokenByPhoneNumber } from "@/data/verificiation-token";
+import { getPasswordResetTokenByPhoneNumber } from "@/data/password-reset-token";
+import { getTwoFactorTokenByPhoneNumber } from "@/data/two-factor-token";
 
-export const generateTwoFactorToken = async (email: string) => {
+export const generateTwoFactorToken = async (phoneNumber: string) => {
   const token = crypto.randomInt(100_000, 1_000_000).toString();
   const expires = new Date(new Date().getTime() + 5 * 60 * 1000);
 
-  const existingToken = await getTwoFactorTokenByEmail(email);
+  const existingToken = await getTwoFactorTokenByPhoneNumber(phoneNumber);
 
   if (existingToken) {
     await db.twoFactorToken.delete({
@@ -22,7 +22,7 @@ export const generateTwoFactorToken = async (email: string) => {
 
   const twoFactorToken = await db.twoFactorToken.create({
     data: {
-      email,
+      phoneNumber,
       token,
       expires,
     }
@@ -31,11 +31,11 @@ export const generateTwoFactorToken = async (email: string) => {
   return twoFactorToken;
 }
 
-export const generatePasswordResetToken = async (email: string) => {
+export const generatePasswordResetToken = async (phoneNumber: string) => {
   const token = uuidv4();
   const expires = new Date(new Date().getTime() + 3600 * 1000);
 
-  const existingToken = await getPasswordResetTokenByEmail(email);
+  const existingToken = await getPasswordResetTokenByPhoneNumber(phoneNumber);
 
   if (existingToken) {
     await db.passwordResetToken.delete({
@@ -45,7 +45,7 @@ export const generatePasswordResetToken = async (email: string) => {
 
   const passwordResetToken = await db.passwordResetToken.create({
     data: {
-      email,
+      phoneNumber,
       token,
       expires
     }
@@ -54,11 +54,11 @@ export const generatePasswordResetToken = async (email: string) => {
   return passwordResetToken;
 }
 
-export const generateVerificationToken = async (email: string) => {
+export const generateVerificationToken = async (phoneNumber: string) => {
   const token = uuidv4();
   const expires = new Date(new Date().getTime() + 3600 * 1000);
 
-  const existingToken = await getVerificationTokenByEmail(email);
+  const existingToken = await getVerificationTokenByPhoneNumber(phoneNumber);
 
   if (existingToken) {
     await db.verificationToken.delete({
@@ -70,7 +70,7 @@ export const generateVerificationToken = async (email: string) => {
 
   const verficationToken = await db.verificationToken.create({
     data: {
-      email,
+      phoneNumber,
       token,
       expires,
     }
