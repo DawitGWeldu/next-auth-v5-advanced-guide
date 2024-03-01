@@ -38,19 +38,19 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   });
 
   
-  // await sendVerificationSms(
-  //   num,
-  // ).then((res)=>{
-  //   saveVerificationCode(res, num);
-  // }).catch((err)=>{
-  //   console.log("[sendVerificationSms]: "+ err);
-  // });
+  await sendVerificationSms(
+    `0${num}`,
+  ).then((res)=>{
+    saveVerificationCode(res, num);
+  }).catch((err)=>{
+    console.log("[sendVerificationSms]: "+ err);
+  });
 
 
-  //offline mode
-  const token = sendVerificationSms(`0${num}`);
-  saveVerificationCode(token, num);
-  //end offline mode
+  // //offline test mode
+  // const token = sendVerificationSms(`0${num}`);
+  // saveVerificationCode(token, num);
+  // //end offline mode
   return { success: "Sending confirmation code via SMS",  };
 };
 

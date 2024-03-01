@@ -29,7 +29,7 @@ export const ResetForm = () => {
   const form = useForm<z.infer<typeof ResetSchema>>({
     resolver: zodResolver(ResetSchema),
     defaultValues: {
-      email: "",
+      phoneNumber: "",
     },
   });
 
@@ -60,10 +60,10 @@ export const ResetForm = () => {
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -84,7 +84,7 @@ export const ResetForm = () => {
             type="submit"
             className="w-full"
           >
-            Send reset email
+            Send reset message
           </Button>
         </form>
       </Form>

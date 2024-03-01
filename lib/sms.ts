@@ -13,7 +13,7 @@ export const sendTwoFactorTokenSms = async (
     headers: {
       'Authorization': `Bearer ${process.env.AFRO_SMS_API_KEY}`
     },
-    data: {
+    params: {
       timeout: 10000, // default is `0` (no timeout)
       from: process.env.AFRO_SMS_IDENTIFIER_ID,
       to: phoneNumber,
@@ -39,7 +39,7 @@ export const sendPasswordResetSms = async (
     headers: {
       'Authorization': `Bearer ${process.env.AFRO_SMS_API_KEY}`
     },
-    data: {
+    params: {
       timeout: 10000, // default is `0` (no timeout)
       from: process.env.AFRO_SMS_IDENTIFIER_ID,
       to: phoneNumber,
@@ -55,31 +55,31 @@ export const sendPasswordResetSms = async (
 
 };
 
-export const sendVerificationSms = (
+export const sendVerificationSms = async (
   phoneNumber: string,
 ) => {
-  // const pr = "Your%20verification%20code%20is%20"; // must be url encoded
-  // const ps = encode("to confirm your email.")
-  // const verification = await axios({
-  //   url: 'https://api.afromessage.com/api/challenge',
-  //   method: 'get',
-  //   headers: {
-  //     'Authorization': `Bearer ${process.env.AFRO_SMS_API_KEY}`
-  //   },
-  //   params: {
-  //     timeout: 10000, // default is `0` (no timeout)
-  //     from: process.env.AFRO_SMS_IDENTIFIER_ID,
-  //     to: phoneNumber,
-  //     pr: pr, // must be url encoded
-  //     sb: 0,
-  //     sa: 2,
-  //     ps: ps, // must be url encoded
-  //     ttl: 0,
-  //     len: 6,
-  //     t: 0
-  //   },
-  // });
+  const pr = "Your%20verification%20code%20is%20"; // must be url encoded
+  const ps= ".%20This%20code%20will%20expire%20in%20one%20hour.%20Thank%20you%20for%20joining.%20%F0%9F%8E%89%20-Dave"; // must be url encoded
+  const verification = await axios({
+    url: 'https://api.afromessage.com/api/challenge',
+    method: 'get',
+    headers: {
+      'Authorization': `Bearer ${process.env.AFRO_SMS_API_KEY}`
+    },
+    params: {
+      timeout: 10000, // default is `0` (no timeout)
+      from: process.env.AFRO_SMS_IDENTIFIER_ID,
+      to: phoneNumber,
+      pr: pr, // must be url encoded
+      sb: 0,
+      sa: 2,
+      ps: ps, // must be url encoded
+      ttl: 0,
+      len: 6,
+      t: 0
+    },
+  });
 
-  // const code = verification.data.response.code;
-  return "123456";
+  const code = verification.data.response.code;
+  return code;
 };
